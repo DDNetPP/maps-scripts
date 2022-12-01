@@ -14,19 +14,6 @@ import numpy
 import re
 import twmap
 
-# if len(sys.argv) != 3:
-#     print("usage: dark.py BASE_MAP DIFF_MAP")
-#     sys.exit(0)
-# 
-# base_map_file = sys.argv[1]
-# diff_map_file = sys.argv[2]
-
-base_map_file = "./gores.map"
-diff_map_file = "./gores_w_platform.map"
-
-base_map = twmap.Map(base_map_file)
-diff_map = twmap.Map(diff_map_file)
-
 def diff_layers(layer1, layer2):
     diffs = []
     if layer1.width() != layer2.width():
@@ -70,11 +57,16 @@ def gen_py_layer_diff(diffs, layer, name):
     patches.append(f"in_map.{layer}.tiles = {layer_slug}")
     return patches
 
-def gen_py_patch():
+def gen_py_patch(base_map_file, diff_map_file):
     """
-    Given a array of tile diffs
+    Given two map file paths
     this generats a python patch script
+    that can be applied to the first map
+    to get the second map
     """
+    base_map = twmap.Map(base_map_file)
+    diff_map = twmap.Map(diff_map_file)
+    # os.path.splitext(os.path.basename('foo/bar/baz.txt'))[0]
     patches = []
     patches.append('#/usr/bin/env python3')
     patches.append('import twmap')
@@ -104,4 +96,11 @@ def gen_py_patch():
     with open('patch.py', 'w') as patch:
         patch.write("\n".join(patches) + "\n")
 
-gen_py_patch()
+if len(sys.argv) != 3:
+    print("usage: patch_gen.py BASE_MAP DIFF_MAP")
+    sys.exit(0)
+
+base_map_file = sys.argv[1]
+diff_map_file = sys.argv[2]
+gen_py_patch(base_map_file, diff_map_file)
+
