@@ -101,8 +101,10 @@ def gen_py_patch(base_map_file, diff_map_file):
 
     patches.append(f"in_map.save('{mapname}.map')")
 
-    with open(f"{mapname}_{diffname}_patch.py", 'w') as patch:
+    patchfile = f"{mapname}_{diffname}_patch.py"
+    with open(patchfile, 'w') as patch:
         patch.write("\n".join(patches) + "\n")
+    os.chmod(patchfile, 0o744)
 
 if len(sys.argv) != 3:
     print("usage: patch_gen.py BASE_MAP DIFF_MAP")
