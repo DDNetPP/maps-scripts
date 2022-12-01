@@ -10,6 +10,7 @@
 """
 
 import sys
+import os
 import numpy
 import re
 import twmap
@@ -66,11 +67,18 @@ def gen_py_patch(base_map_file, diff_map_file):
     """
     base_map = twmap.Map(base_map_file)
     diff_map = twmap.Map(diff_map_file)
-    # os.path.splitext(os.path.basename('foo/bar/baz.txt'))[0]
+    mapname = os.path.splitext(os.path.basename(base_map_file))[0]
+    mapname = re.sub(r'[^a-zA-Z_]', '', mapname)
+    diffname = os.path.splitext(os.path.basename(diff_map_file))[0]
+    diffname = re.sub(r'[^a-zA-Z_]', '', diffname)
+    if diffname.startswith(f"{mapname}_"):
+        diffname = diffname[(len(mapname) + 1):]
+    elif diffname.startswith(mapname):
+        diffname = diffname[len(mapname):]
     patches = []
-    patches.append('#/usr/bin/env python3')
+    patches.append('#!/usr/bin/env python3')
     patches.append('import twmap')
-    patches.append("in_map = twmap.Map('in.map')")
+    patches.append(f"in_map = twmap.Map('{mapname}.map')")
 
     group_index = -1
     for group in base_map.groups:
@@ -91,9 +99,9 @@ def gen_py_patch(base_map_file, diff_map_file):
                     f"groups[{group_index}].layers[{layer_index}]",
                     f"{group.name}_{layer.name}")
 
-    patches.append("in_map.save('out.map')")
+    patches.append(f"in_map.save('{mapname}.map')")
 
-    with open('patch.py', 'w') as patch:
+    with open(f"{mapname}_{diffname}_patch.py", 'w') as patch:
         patch.write("\n".join(patches) + "\n")
 
 if len(sys.argv) != 3:
@@ -103,4 +111,3 @@ if len(sys.argv) != 3:
 base_map_file = sys.argv[1]
 diff_map_file = sys.argv[2]
 gen_py_patch(base_map_file, diff_map_file)
-
