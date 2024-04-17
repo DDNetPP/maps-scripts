@@ -43,7 +43,7 @@ def diff_layers(layer1, layer2):
 def gen_py_layer_diff(diffs, layer, name):
     """
     Given a array of tile diffs
-    this generats a python patches
+    this generates python patches
     """
     patches = []
     layer_slug = re.sub(r'[^a-zA-Z_]', '', name)
