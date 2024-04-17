@@ -16,31 +16,28 @@ import re
 import twmap
 
 def diff_layers(layer1, layer2):
-    diffs = []
     if layer1.width() != layer2.width():
         print('Error: Layers of different width are not supported')
         sys.exit(1)
     if layer1.height() != layer2.height():
         print('Error: Layers of different height are not supported')
         sys.exit(1)
-    for (y, x, flags), tile in numpy.ndenumerate(layer1.tiles):
-        if flags != 0:
-            # TODO: support flag diffs
-            continue
-        cmp_tile = layer2.tiles[y][x]
-        # print('##')
-        # print(f"x={x} y={y} tile={tile} cmp={cmp_tile[0]}")
-        if tile == cmp_tile[0]:
-            # skip matches
-            continue
-        diffs.append({
-            'x': x,
-            'y': y,
-            'flags': cmp_tile[1],
-            'tile': cmp_tile[0]})
-    return diffs
 
-def gen_py_layer_diff(diffs, layer, name):
+    a = layer1.tiles
+    b = layer2.tiles
+
+    axes = numpy.where(a != b)[:2]
+    axes = numpy.transpose(axes)
+    axes = numpy.unique(axes, axis=0)
+
+    axes_ = (axes[:,0], axes[:,1])
+
+    coordinates = axes
+    values = b[axes_]
+
+    return coordinates, values
+
+def gen_py_layer_diff(coordinates, values, layer, name):
     """
     Given a array of tile diffs
     this generates python patches
@@ -48,11 +45,7 @@ def gen_py_layer_diff(diffs, layer, name):
     patches = []
     layer_slug = re.sub(r'[^a-zA-Z_]', '', name)
     patches.append(f"{layer_slug} = in_map.{layer}.tiles")
-    for diff in diffs:
-        x = diff['x']
-        y = diff['y']
-        tile = diff['tile']
-        flags = diff['flags']
+    for y, x, tile, flags in numpy.concatenate((coordinates, values), axis=1):
         patches.append(f"{layer_slug}[{y}][{x}] = [{tile}, {flags}]")
         # print(diff
     patches.append(f"in_map.{layer}.tiles = {layer_slug}")
@@ -91,11 +84,14 @@ def gen_py_patch(base_map_file, diff_map_file):
                 # TODO: support quads etc
                 print(f"Warning: skipping {layer.kind()}")
                 continue
-            diffs = diff_layers(
+            print(f"diffing layer")
+            coordinates, values = diff_layers(
                     base_map.groups[group_index].layers[layer_index],
                     diff_map.groups[group_index].layers[layer_index])
+            print("generating patches")
             patches += gen_py_layer_diff(
-                    diffs,
+                    coordinates,
+                    values,
                     f"groups[{group_index}].layers[{layer_index}]",
                     f"{group.name}_{layer.name}")
 
