@@ -9,6 +9,7 @@
 # expected sample output: 184
 #
 
+from os.path import isfile
 import sys
 
 import twmap
@@ -17,7 +18,11 @@ if len(sys.argv) != 2:
     print(f"usage: {sys.argv[0]} map")
     sys.exit(0)
 
-m = twmap.Map(sys.argv[1])
+map_path = sys.argv[1]
+if not isfile(map_path):
+    print(f"Mapfile not found '{map_path}'", file=sys.stderr)
+    exit(1)
+m = twmap.Map(map_path)
 
 # TXT+Deep (version number text)
 txt_tiles = m.groups[17].layers[5].tiles
