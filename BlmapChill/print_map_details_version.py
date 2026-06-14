@@ -4,7 +4,7 @@
 #
 # usage: python print_map_details_version.py BlmapChill.map
 #
-# expected sample output: 0184
+# expected sample output: 184
 #
 
 from os.path import isfile
@@ -21,4 +21,4 @@ if not isfile(map_path):
     print(f"Mapfile not found '{map_path}'", file=sys.stderr)
     exit(1)
 m = twmap.Map(map_path)
-print(m.info.version)
+print(str(int(m.info.version)))
