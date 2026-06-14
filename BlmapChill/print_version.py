@@ -6,7 +6,7 @@
 #
 # usage: python print_version.py BlmapChill.map
 #
-# expected sample output: 184
+# expected sample output: 0184
 #
 
 from os.path import isfile
@@ -40,6 +40,4 @@ for digit in digits:
     else:
         version_str += str(digit - 29)
 
-version = int(version_str)
-
-print(str(version))
+print(version_str)
