@@ -11,11 +11,15 @@
 
 import sys
 import os
-import numpy
 import re
+
+import numpy
 import twmap
 
 def diff_layers(layer1, layer2):
+    """
+    find the coordinates and values that differ in two layers
+    """
     if layer1.width() != layer2.width():
         print('Error: Layers of different width are not supported')
         sys.exit(1)
@@ -84,11 +88,11 @@ def gen_py_patch(base_map_file, diff_map_file):
                 # TODO: support quads etc
                 print(f"Warning: skipping {layer.kind()}")
                 continue
-            print(f"diffing layer")
+            print('diffing layer')
             coordinates, values = diff_layers(
                     base_map.groups[group_index].layers[layer_index],
                     diff_map.groups[group_index].layers[layer_index])
-            print("generating patches")
+            print('generating patches')
             patches += gen_py_layer_diff(
                     coordinates,
                     values,
@@ -98,14 +102,20 @@ def gen_py_patch(base_map_file, diff_map_file):
     patches.append(f"in_map.save('{mapname}.map')")
 
     patchfile = f"{mapname}_{diffname}_patch.py"
-    with open(patchfile, 'w') as patch:
+    with open(patchfile, 'w', encoding="utf8") as patch:
         patch.write("\n".join(patches) + "\n")
     os.chmod(patchfile, 0o744)
 
-if len(sys.argv) != 3:
-    print("usage: patch_gen.py BASE_MAP DIFF_MAP")
-    sys.exit(0)
+def main():
+    """
+    script entry point
+    """
+    if len(sys.argv) != 3:
+        print("usage: patch_gen.py BASE_MAP DIFF_MAP")
+        sys.exit(0)
 
-base_map_file = sys.argv[1]
-diff_map_file = sys.argv[2]
-gen_py_patch(base_map_file, diff_map_file)
+    base_map_file = sys.argv[1]
+    diff_map_file = sys.argv[2]
+    gen_py_patch(base_map_file, diff_map_file)
+
+main()

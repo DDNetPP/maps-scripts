@@ -1,3 +1,6 @@
 [TYPECHECK]
 ignored-modules=twmap
 
+[MESSAGES CONTROL]
+disable=W0511
+
